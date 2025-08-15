@@ -1,0 +1,42 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.env
+.venv
+env/
+venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# ===== Node / Frontend =====
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+build/
+*.log
+
+# ===== Environment & Secrets =====
+*.env
+*.env.*
+secrets.json
+
+# ===== System Files =====
+.DS_Store
+Thumbs.db
+
+# ===== VS Code =====
+.vscode/
+.history/
+
+# ===== Others =====
+*.sqlite3
+*.db
