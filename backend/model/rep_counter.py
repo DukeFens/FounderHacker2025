@@ -1,15 +1,20 @@
-from feedback_rules import calculate_angle
+from .feedback_rules import calculate_angle  # Use relative import
 
 class RepCounter:
     def __init__(self, exercise="pullup"):
         self.exercise = exercise
         self.count = 0
         self.stage = None  # "up" or "down"
+    
+    @property
+    def reps(self):
+        """Property to access count as reps"""
+        return self.count
 
     def update(self, landmarks):
         """Update repetition count based on exercise and pose landmarks"""
         if not landmarks:
-            return self.count, 0  # Trả về 0 khi chưa có góc
+            return self.count, 0  # Return 0 when no angle
 
         if self.exercise == "pullup":
             return self._count_pullup(landmarks)
