@@ -1,0 +1,26 @@
+flowchart TD
+    A[📹 Camera Input] --> B[MediaPipe Pose Detection]
+    B --> C[Extract Joint Positions]
+    C --> D[Calculate Exercise Angles]
+    
+    D --> E{Form Analysis}
+    E -->|Good Form| F[Count Rep]
+    E -->|Poor Form| G[Capture Problem Frame]
+    
+    F --> H[Update Rep Counter]
+    
+    G --> I[Send Frame + Data to Gemini]
+    I --> J[Receive Form Correction Advice]
+    J --> K[Display Real-time Alert]
+    
+    subgraph "Live Display"
+        L[Video Feed with Pose Overlay]
+        M[Current Angles Display]
+        N[Rep Counter]
+        O[Form Feedback Panel]
+    end
+    
+    B --> L
+    D --> M
+    H --> N
+    K --> O
