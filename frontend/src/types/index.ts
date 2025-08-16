@@ -1,5 +1,5 @@
 export type ID = string;
-export type Exercise = 'Squat' | 'ShoulderAbduction';
+export type Exercise = 'Squat' | 'ShoulderAbduction' | 'Pullup';
 
 export type Keypoint = { 
   name: string; 

@@ -38,10 +38,10 @@ export const CoachOverlay = forwardRef<HTMLCanvasElement, CoachOverlayProps>(
       // Draw joint markers
       drawJoints(ctx, pose.keypoints, canvas.width, canvas.height);
       
-      // Draw flags if any
-      if (flags.length > 0) {
-        drawFlags(ctx, flags, canvas.width, canvas.height);
-      }
+      // Draw flags if any (disabled to clear warnings)
+      // if (flags.length > 0) {
+      //   drawFlags(ctx, flags, canvas.width, canvas.height);
+      // }
 
       // Continue animation
       animationRef.current = requestAnimationFrame(() => {
@@ -61,10 +61,12 @@ export const CoachOverlay = forwardRef<HTMLCanvasElement, CoachOverlayProps>(
       width: number,
       height: number
     ) => {
-      ctx.strokeStyle = '#00ff00';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#00ff00';  // Bright green
+      ctx.lineWidth = 4;  // Thicker lines
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
+      ctx.shadowColor = '#00ff00';  // Glow effect
+      ctx.shadowBlur = 6;
 
       // Define skeleton connections
       const connections = [
@@ -118,16 +120,16 @@ export const CoachOverlay = forwardRef<HTMLCanvasElement, CoachOverlayProps>(
           const x = keypoint.x * width;
           const y = keypoint.y * height;
           
-          // Draw joint circle
+          // Draw joint circle - bigger and brighter
           ctx.beginPath();
-          ctx.arc(x, y, 4, 0, 2 * Math.PI);
+          ctx.arc(x, y, 6, 0, 2 * Math.PI);  // Bigger radius
           ctx.fillStyle = '#00ff00';
           ctx.fill();
           
-          // Draw glow effect
+          // Draw glow effect - more prominent
           ctx.beginPath();
-          ctx.arc(x, y, 8, 0, 2 * Math.PI);
-          ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+          ctx.arc(x, y, 12, 0, 2 * Math.PI);  // Bigger glow
+          ctx.fillStyle = 'rgba(0, 255, 0, 0.6)';  // More opaque
           ctx.fill();
         }
       });

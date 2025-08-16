@@ -5,6 +5,7 @@ export interface Angles {
   knee?: number;
   shoulder?: number;
   torso?: number;
+  armpit?: number; // Add armpit angle for pull-ups
 }
 
 export function calculateAngles(keypoints: Keypoint[]): Angles {
@@ -44,6 +45,13 @@ export function calculateAngles(keypoints: Keypoint[]): Angles {
   
   if (rightShoulder && rightHip) {
     angles.torso = calculateTorsoAngle(rightShoulder, rightHip);
+  }
+
+  // Calculate armpit angle for pull-ups (elbow-shoulder-hip)
+  const rightElbow = findKeypoint('right_elbow');
+  
+  if (rightElbow && rightShoulder && rightHip) {
+    angles.armpit = calculateAngle(rightElbow, rightShoulder, rightHip);
   }
 
   return angles;

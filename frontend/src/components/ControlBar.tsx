@@ -47,6 +47,17 @@ export const ControlBar: React.FC<ControlBarProps> = ({
           <label className="text-sm font-medium text-gray-700">Exercise:</label>
           <div className="flex gap-2">
             <button
+              onClick={() => handleExerciseChange('Pullup')}
+              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+                exercise === 'Pullup'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              disabled={isActive}
+            >
+              Pull-up
+            </button>
+            <button
               onClick={() => handleExerciseChange('Squat')}
               className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
                 exercise === 'Squat'

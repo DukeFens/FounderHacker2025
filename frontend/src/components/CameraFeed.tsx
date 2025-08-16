@@ -14,6 +14,7 @@ export const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
     const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
     const [selectedDevice, setSelectedDevice] = useState<string>('');
     const [error, setError] = useState<string>('');
+    const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
     useEffect(() => {
       // Get available camera devices
@@ -33,17 +34,19 @@ export const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
       getDevices();
     }, []);
 
-    useEffect(() => {
-      if (isActive && selectedDevice) {
-        startCamera();
-      } else {
-        stopCamera();
-      }
-    }, [isActive, selectedDevice]);
+         useEffect(() => {
+       if (isActive) {
+         // Start camera even if no specific device is selected
+         startCamera();
+       } else {
+         stopCamera();
+       }
+     }, [isActive]);
 
     const startCamera = async () => {
       try {
         setError('');
+        
         
         // First, request permissions explicitly
         const permissions = await navigator.permissions.query({ name: 'camera' as PermissionName });
@@ -54,26 +57,57 @@ export const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
           return;
         }
         
-        const constraints = {
-          video: {
-            deviceId: selectedDevice ? { exact: selectedDevice } : undefined,
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            facingMode: 'user'
-          }
-        };
+                 const constraints = {
+           video: {
+             deviceId: selectedDevice ? { exact: selectedDevice } : undefined,
+             width: { ideal: 1280 },
+             height: { ideal: 720 },
+             facingMode: 'user'
+           }
+         };
 
-        const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+                  const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
         setStream(mediaStream);
         
-        if (ref && 'current' in ref && ref.current) {
-          ref.current.srcObject = mediaStream;
-          ref.current.play();
-        }
+                 // Monitor stream for unexpected stops
+         mediaStream.getTracks().forEach(track => {
+           track.onended = () => {
+             onCameraActive(false);
+           };
+         });
+        
+                 if (ref && 'current' in ref && ref.current) {
+           
+           ref.current.srcObject = mediaStream;
+           
+                       // Wait for video to be ready
+            await new Promise((resolve) => {
+              if (ref.current) {
+                ref.current.onloadedmetadata = () => {
+                  ref.current?.play();
+                  resolve(true);
+                };
+                
+                // Also listen for play event
+                ref.current.onplay = () => {
+                  setIsVideoPlaying(true);
+                };
+                
+                ref.current.onpause = () => {
+                  setIsVideoPlaying(false);
+                };
+                
+                ref.current.onerror = (e) => {
+                  console.error('CameraFeed: Video error:', e);
+                };
+              }
+            });
+         }
+        
         
         onCameraActive(true);
       } catch (err: any) {
-        console.error('Camera access failed:', err);
+        console.error('CameraFeed: Camera access failed:', err);
         
         if (err.name === 'NotAllowedError') {
           setError('Camera access denied. Please allow camera permissions.');
@@ -81,21 +115,37 @@ export const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
           setError('No camera found on this device.');
         } else if (err.name === 'NotReadableError') {
           setError('Camera is already in use by another application.');
+        } else if (err.name === 'OverconstrainedError') {
+          setError('Camera constraints not supported. Trying default settings.');
+          // Try with default constraints
+          try {
+            const defaultStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            setStream(defaultStream);
+            if (ref && 'current' in ref && ref.current) {
+              ref.current.srcObject = defaultStream;
+              ref.current.play();
+            }
+            onCameraActive(true);
+            return;
+          } catch (defaultErr) {
+            setError('Failed to access camera with default settings.');
+          }
         } else {
-          setError('Failed to access camera. Please try again.');
+          setError(`Failed to access camera: ${err.message}`);
         }
         
         onCameraActive(false);
       }
     };
 
-    const stopCamera = () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        setStream(null);
-      }
-      onCameraActive(false);
-    };
+         const stopCamera = () => {
+       if (stream) {
+         stream.getTracks().forEach(track => track.stop());
+         setStream(null);
+       }
+       setIsVideoPlaying(false);
+       onCameraActive(false);
+     };
 
     const handleDeviceChange = (deviceId: string) => {
       setSelectedDevice(deviceId);
@@ -106,10 +156,11 @@ export const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
         {/* Video Element */}
         <video
           ref={ref}
-          className="w-full h-auto max-h-[70vh] object-cover"
+          className="w-full h-auto max-h-[70vh] object-cover bg-black"
           autoPlay
           playsInline
           muted
+          style={{ minHeight: '400px' }}
         />
         
         {/* Camera Controls Overlay */}
@@ -130,20 +181,20 @@ export const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
             </select>
           </div>
           
-          {/* Camera Status */}
-          <div className="flex items-center gap-2">
-            {isActive ? (
-              <div className="flex items-center gap-2 bg-green-500/80 text-white px-3 py-1 rounded-full text-sm">
-                <Video className="w-4 h-4" />
-                Live
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 bg-red-500/80 text-white px-3 py-1 rounded-full text-sm">
-                <VideoOff className="w-4 h-4" />
-                Offline
-              </div>
-            )}
-          </div>
+                     {/* Camera Status */}
+           <div className="flex items-center gap-2">
+             {isActive ? (
+               <div className="flex items-center gap-2 bg-green-500/80 text-white px-3 py-1 rounded-full text-sm">
+                 <Video className="w-4 h-4" />
+                 {isVideoPlaying ? 'Playing' : 'Live'}
+               </div>
+             ) : (
+               <div className="flex items-center gap-2 bg-red-500/80 text-white px-3 py-1 rounded-full text-sm">
+                 <VideoOff className="w-4 h-4" />
+                 Offline
+               </div>
+             )}
+           </div>
         </div>
         
         {/* Error Message */}
@@ -180,10 +231,12 @@ export const CameraFeed = forwardRef<HTMLVideoElement, CameraFeedProps>(
               </button>
             </div>
           </div>
-        )}
-      </div>
-    );
-  }
-);
+                 )}
+         
+         
+       </div>
+     );
+   }
+ );
 
 CameraFeed.displayName = 'CameraFeed';

@@ -68,6 +68,11 @@ export const AngleStack: React.FC<AngleStackProps> = ({ angles, exercise, isActi
         { angle: angles.shoulder, label: 'Shoulder' },
         { angle: angles.torso, label: 'Torso' }
       ];
+    } else if (exercise === 'Pullup') {
+      return [
+        { angle: angles.armpit, label: 'Armpit' },
+        { angle: angles.torso, label: 'Torso' }
+      ];
     }
     return [];
   };
@@ -104,6 +109,12 @@ export const AngleStack: React.FC<AngleStackProps> = ({ angles, exercise, isActi
             <p>• Target depth: Knee angle &lt; 120°</p>
             <p>• Keep chest up: Torso &lt; 15°</p>
             <p>• Push knees out</p>
+          </div>
+        ) : exercise === 'Pullup' ? (
+          <div className="text-sm text-gray-600 space-y-1">
+            <p>• Pull up: Armpit angle &lt; 90°</p>
+            <p>• Lower down: Armpit angle &gt; 160°</p>
+            <p>• Keep body stable</p>
           </div>
         ) : (
           <div className="text-sm text-gray-600 space-y-1">

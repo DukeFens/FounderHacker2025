@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { Exercise, PoseResult, Angles, RepMetric } from '@/types';
+import { Exercise, PoseResult, RepMetric } from '@/types';
+import { Angles } from '@/lib/pose/angles';
 import { RepDetector } from '@/lib/pose/repDetector';
 
 interface LiveState {
@@ -28,6 +29,7 @@ interface LiveState {
   updateAngles: (angles: Angles) => void;
   updateFlags: (flags: string[]) => void;
   updateScore: (score: number) => void;
+  updateRep: (rep: number) => void;
   reset: () => void;
 }
 
@@ -35,7 +37,7 @@ export const useLiveStore = create<LiveState>((set, get) => ({
   // Initial state
   isActive: false,
   isRecording: false,
-  exercise: 'Squat',
+  exercise: 'Pullup', // Changed default to Pullup since backend works best with this
   startTime: null,
   
   currentPose: null,
@@ -111,6 +113,10 @@ export const useLiveStore = create<LiveState>((set, get) => ({
   
   updateScore: (score: number) => {
     set({ currentScore: score });
+  },
+  
+  updateRep: (rep: number) => {
+    set({ currentRep: rep });
   },
   
   reset: () => {
